@@ -26,11 +26,21 @@ int main()
 	glViewport(0, 0, width, height);
 
 	//creating a traingle
+	float positions[12] = {
+	-0.5f,-0.5f,0.0f,//bottom left
+	0.5f,-0.5f,0.0f,//bottom right
+	-0.5f,0.5f,0.0f,//top left
+	0.5f,0.5f,0.0f,//top right
+	};
+	GLuint indices[6] = {
+		0,1,2,
+		2,3,1
+	};
+
 	{
 		Program program;
 		//Objects
-		Objects o;
-
+		Objects o(indices, positions, sizeof(indices),sizeof(positions));
 
 		//render loop
 		while (!glfwWindowShouldClose(window))
@@ -47,7 +57,6 @@ int main()
 			program.activate();
 
 			glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-
 
 			glBindVertexArray(o.VAO);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);

@@ -5,19 +5,12 @@
 class Objects
 {
 private:
-	float positions[12] = {
-		-0.5f,-0.5f,0.0f,//bottom left
-		0.5f,-0.5f,0.0f,//bottom right
-		-0.5f,0.5f,0.0f,//top left
-		0.5f,0.5f,0.0f,//top right
-	};
-	GLuint indices[6] = {
-		0,1,2,
-		2,3,1
-	};
+	GLuint* indices;
+	float* positions;
 public:
 	GLuint VAO, VBO, EBO;
 	Objects();
+	Objects(GLuint*,float*,size_t,size_t);
 	~Objects();
 };
 
