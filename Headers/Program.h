@@ -10,6 +10,7 @@ public:
 	GLuint getProgram();
 	void makeShaders();
 	void errorCheck();
+	void activate();
 	~Program();
 };
 

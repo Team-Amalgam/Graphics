@@ -151,14 +151,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Headers\VAO.cpp" />
+    <ClCompile Include="Headers\VBO.cpp" />
+    <ClCompile Include="src\EBO.cpp" />
     <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\Objects.cpp" />
     <ClCompile Include="src\Program.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\EBO.h" />
+    <ClInclude Include="Headers\Objects.h" />
     <ClInclude Include="Headers\Program.h" />
     <ClInclude Include="Headers\Shader.h" />
+    <ClInclude Include="Headers\VAO.h" />
+    <ClInclude Include="Headers\VBO.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
