@@ -16,6 +16,7 @@ private:
 	const char* fragmentShaderSource;
 	GLuint vertexShader;
 	GLuint fragmentShader;
+	std::string temp, temp2;
 	std::string get_file_contents(const char*);
 public:
 	Shader();
