@@ -38,3 +38,8 @@ void Program::errorCheck()
 		std::cout << "ERROR::PROGRAM::LINKING_FAILED\n" << message << std::endl;
 	}
 }
+
+void Program::activate()
+{
+	glUseProgram(program);
+}
