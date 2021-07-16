@@ -36,6 +36,40 @@ struct MeshVertex
         Normal = _Normal;
         Color = _Color;
     }
+    void getPositions(MeshVertex* meshVertices, float* positions, size_t size) {
+        for (UINT VertexIndex = 0; VertexIndex < size; VertexIndex++) {
+            positions[3 * VertexIndex + 0] = meshVertices[VertexIndex].Pos.x;
+            positions[3 * VertexIndex + 1] = meshVertices[VertexIndex].Pos.y;
+            positions[3 * VertexIndex + 2] = meshVertices[VertexIndex].Pos.z;
+        }
+    }
+    void getNormals(MeshVertex* meshVertices, float* normals, size_t size) {
+        for (UINT VertexIndex = 0; VertexIndex < size; VertexIndex++) {
+            normals[3 * VertexIndex + 0] = meshVertices[VertexIndex].Normal.x;
+            normals[3 * VertexIndex + 1] = meshVertices[VertexIndex].Normal.y;
+            normals[3 * VertexIndex + 2] = meshVertices[VertexIndex].Normal.z;
+        }
+    }
+    void getColors(MeshVertex* meshVertices, float* colors, size_t size) {
+        for (UINT VertexIndex = 0; VertexIndex < size; VertexIndex++) {
+            colors[3 * VertexIndex + 0] = meshVertices[VertexIndex].Color.x;
+            colors[3 * VertexIndex + 1] = meshVertices[VertexIndex].Color.y;
+            colors[3 * VertexIndex + 2] = meshVertices[VertexIndex].Color.z;
+        }
+    }
+    static void ConvertToVertices(MeshVertex* meshVertices, float* vertices, size_t size, int compiledVertexSize) {     
+        for (UINT VertexIndex = 0; VertexIndex < size; VertexIndex++) {
+            vertices[compiledVertexSize * VertexIndex + 0] = meshVertices[VertexIndex].Pos.x;
+            vertices[compiledVertexSize * VertexIndex + 1] = meshVertices[VertexIndex].Pos.y;
+            vertices[compiledVertexSize * VertexIndex + 2] = meshVertices[VertexIndex].Pos.z;
+            vertices[compiledVertexSize * VertexIndex + 3] = meshVertices[VertexIndex].Normal.x;
+            vertices[compiledVertexSize * VertexIndex + 4] = meshVertices[VertexIndex].Normal.y;
+            vertices[compiledVertexSize * VertexIndex + 5] = meshVertices[VertexIndex].Normal.z;
+            vertices[compiledVertexSize * VertexIndex + 6] = meshVertices[VertexIndex].Color.x;
+            vertices[compiledVertexSize * VertexIndex + 7] = meshVertices[VertexIndex].Color.y;
+            vertices[compiledVertexSize * VertexIndex + 8] = meshVertices[VertexIndex].Color.z;
+        }
+    }
     static void Interpolate(const MeshVertex& sv, const MeshVertex& ev, MeshVertex& out, float s)
     {
         int i;
