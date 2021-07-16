@@ -5,7 +5,7 @@ float SphereFunction(const Vec3f&);
 float RandomFunction(const Vec3f&);
 float CrazyFunction(const Vec3f&);
 float PlaneFunction(const Vec3f&);
-double KritiKoFunction(Vec3f, int = 4, Vec3f = { 0,0,0 }, int = 1);
+double KritiKoFunction(Vec3f, int = 12, Vec3f = { 1.0f,1.0f,0.5f }, int = 1.0f, double= 0.5f, double= 1.0f, double= 0.8f);
 float interPolate(float input1, float input2, float position, float val1, float val2);
 Vec3f interPolateColors(float input1, float input2, float position, Vec3f Color1, Vec3f Color2);
 

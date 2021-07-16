@@ -30,16 +30,17 @@ float PlaneFunction(const Vec3f& Pos)
     return -Pos.y + KritiKoFunction(Pos); //+Kriti ko function
     //return -Pos.y+ sinf(2*Pos.z+) * cosf(2*Pos.x); //Ramailo terrain
 }
-double KritiKoFunction(Vec3f Pos, int octaves, Vec3f offSet, int multiplier)
+double KritiKoFunction(Vec3f Pos, int octaves, Vec3f offSet, int multiplier, double freq, double amp, double persistence)
 {
     //OUTPUTS
     double maxValue = 0;
     double total = 0;
-
-    //variables
-    double freq = 0.5f;
-    double amp = 2;
-    double persistence = 1;
+      
+    //octaves more than 10 (more smooth, less bumps)
+    //multiplier ( always 1 just a constant) 
+    //persistence(make things pointy better in betwwen 0.5 to 1)
+    //amplitude (depends on persistence, just used for initialize, so basically if, amplitude=0 it's just a plain) 
+    //offset= wavelength kind of thing
     
         for (unsigned i = 0; i < octaves; ++i)
         {
