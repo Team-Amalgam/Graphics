@@ -29,9 +29,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GeneratedCube.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MarchingCubes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -45,6 +42,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\GeneratedCube.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

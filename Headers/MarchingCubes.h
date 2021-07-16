@@ -1,5 +1,5 @@
 #pragma once
-#include "Headers/Essentials.h"
+#include "Essentials.h"
 
 typedef unsigned long DWORD;
 typedef unsigned int UINT;

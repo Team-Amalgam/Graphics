@@ -4,11 +4,15 @@
 float SphereFunction(const Vec3f&);
 float RandomFunction(const Vec3f&);
 float CrazyFunction(const Vec3f&);
+float PlaneFunction(const Vec3f&);
+double KritiKoFunction(Vec3f, int = 4, Vec3f = { 0,0,0 }, int = 1);
+float interPolate(float input1, float input2, float position, float val1, float val2);
+Vec3f interPolateColors(float input1, float input2, float position, Vec3f Color1, Vec3f Color2);
 
 class GeneratedCube {
 private:
 
-    static const UINT FunctionCount = 3;
+    static const UINT FunctionCount = 4;
     float (*_functions[FunctionCount])(const Vec3f& Pos);
     UINT _functionIndex;
 
@@ -40,12 +44,14 @@ public:
         _IndexCount = 0;
         _Epsilon = 0.0003f;
 
-        _functionIndex = 2;
+        _functionIndex = 3;
         _functions[0] = SphereFunction;
         _functions[1] = RandomFunction;
         _functions[2] = CrazyFunction;
-    
-        IsoApproximate(1.25f, 0.025f, _functions[_functionIndex]);
+        _functions[3] = PlaneFunction;
+
+        IsoApproximate(2.0f, 0.1f, _functions[_functionIndex]);
+        //IsoApproximate(1.25f, 0.025f, _functions[_functionIndex]);
     }
     //Generate Surface
     void IsoApproximate(float BoxSize, float CellSize, float (*Function)(const Vec3f& Pos))
@@ -99,7 +105,8 @@ public:
             _Indices[FaceIndex * 3 + 1] = CurFace.I[1];
             _Indices[FaceIndex * 3 + 2] = CurFace.I[2];
         }
-        ColorNormals(meshVertices);
+        ColorbyThresHold(meshVertices);
+        //ColorbyInterPolation(meshVertices);
         ConvertToVertices(meshVertices);
         delete[] meshVertices;
     }
@@ -118,17 +125,42 @@ public:
             _Vertices[compiledVertexSize * VertexIndex + 8] = meshVertices[VertexIndex].Color.z;
         }
     }
-
-    void ColorNormals(MeshVertex* meshVertices,
+    void ColorbyNormals(MeshVertex* meshVertices,
         float fr = 1.0f, float fg = 1.0f, float fb = 1.0f)
 	{
 		for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {
-			int r = int((meshVertices[VertexIndex].Normal.x / 2.0f + 0.5f) * 255 * fr);
-			int g = int((meshVertices[VertexIndex].Normal.y / 2.0f + 0.5f) * 255 * fg);
-			int b = int((meshVertices[VertexIndex].Normal.z / 2.0f + 0.5f) * 255 * fb);    //remap each normal's (x, y, z) to (r, g, b)
+
+			float r = (meshVertices[VertexIndex].Normal.x / 2.0f + 0.5f) * fr;
+			float g = (meshVertices[VertexIndex].Normal.y / 2.0f + 0.5f) * fg;
+			float b = (meshVertices[VertexIndex].Normal.z / 2.0f + 0.5f) * fb;    //remap each normal's (x, y, z) to (r, g, b)
 			meshVertices[VertexIndex].Color = Vec3f(r, g, b);
 		}
 	}
+    void ColorbyInterPolation(MeshVertex* meshVertices,
+        float fr = 1.0f, float fg = 1.0f, float fb = 1.0f)
+    {
+        for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {           
+            Vec3f ColorA = Vec3f(0.0f * fr / 255, 150.0f * fg / 255, 198.0f * fb / 255); //from  0, 150, 199 //Lower Color
+            Vec3f ColorB = Vec3f(233.0f * fr / 255, 196.0f * fg / 255, 106.0f * fb / 255); //to   233, 196, 106 //Upper Color
+            meshVertices[VertexIndex].Color = interPolateColors(0.3f, 0.8f, meshVertices[VertexIndex].Pos.y, ColorA, ColorB);
+        }
+    }
+    void ColorbyThresHold(MeshVertex* meshVertices,
+        float fr = 1.0f, float fg = 1.0f, float fb = 1.0f)
+    {
+        for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {
+            Vec3f ColorL1 = Vec3f(  3.0f * fr / 255,   4.0f * fg / 255,  94.0f * fb / 255); //from   3,   4,  94 //Lower Color1
+            Vec3f ColorL2 = Vec3f(  0.0f * fr / 255, 150.0f * fg / 255, 198.0f * fb / 255); //from   0, 150, 199 //Lower Color2
+            Vec3f ColorU1 = Vec3f(108.0f * fr / 255, 197.0f * fg / 255,  81.0f * fb / 255); //to   108, 197, 81 //Upper Color1
+            Vec3f ColorU2 = Vec3f(233.0f * fr / 255, 196.0f * fg / 255, 106.0f * fb / 255); //to   233, 196, 106 //Upper Color2
+            float lower = 0.2f, threshold = 0.4f, upper = 0.7f;
+            //remap each normal's (x, y, z) to (r, g, b)
+            if (meshVertices[VertexIndex].Pos.y < threshold) 
+                meshVertices[VertexIndex].Color = interPolateColors(lower, threshold, meshVertices[VertexIndex].Pos.y, ColorL1, ColorL2);
+            else 
+                meshVertices[VertexIndex].Color = interPolateColors(threshold, upper, meshVertices[VertexIndex].Pos.y, ColorU1, ColorU2);
+        }
+    }
     template <class type> __forceinline void Swap(type& t1, type& t2)
     {
         type Temp = t1;

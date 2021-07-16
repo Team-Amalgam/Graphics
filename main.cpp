@@ -1,5 +1,5 @@
 #pragma once
-#include "GeneratedCube.h"
+#include "Headers/GeneratedCube.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -182,7 +182,7 @@ int main()
 
         // render
         // ------
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(173.0f/255, 225.0f/255, 229.1f/255, 1.0f); //173, 225, 229
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // be sure to activate shader when setting uniforms/drawing objects

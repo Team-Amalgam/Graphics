@@ -159,7 +159,7 @@
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="Essentials.h" />
-    <ClInclude Include="GeneratedCube.h" />
+    <ClInclude Include="Headers\GeneratedCube.h" />
     <ClInclude Include="MarchingCubes.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="stb_image.h" />

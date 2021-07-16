@@ -309,14 +309,15 @@ int Polygonise(GRIDCELL& Grid, TriMeshFace* Triangles, int& NewVertexCount, Vec3
 	/*Determine the index into the edge table which
 	tells us which vertices are inside of the surface*/
 	CubeIndex = 0;
-	if (Grid.val[0] < 0.0f) CubeIndex |= 1;     
-	if (Grid.val[1] < 0.0f) CubeIndex |= 2;   
-	if (Grid.val[2] < 0.0f) CubeIndex |= 4;
-	if (Grid.val[3] < 0.0f) CubeIndex |= 8;
-	if (Grid.val[4] < 0.0f) CubeIndex |= 16;
-	if (Grid.val[5] < 0.0f) CubeIndex |= 32;
-	if (Grid.val[6] < 0.0f) CubeIndex |= 64;
-	if (Grid.val[7] < 0.0f) CubeIndex |= 128;  
+	float threshold = 0.0f;
+	if (Grid.val[0] < threshold) CubeIndex |= 1;     
+	if (Grid.val[1] < threshold) CubeIndex |= 2;   
+	if (Grid.val[2] < threshold) CubeIndex |= 4;
+	if (Grid.val[3] < threshold) CubeIndex |= 8;
+	if (Grid.val[4] < threshold) CubeIndex |= 16;
+	if (Grid.val[5] < threshold) CubeIndex |= 32;
+	if (Grid.val[6] < threshold) CubeIndex |= 64;
+	if (Grid.val[7] < threshold) CubeIndex |= 128;  
 
 	//Cube is entirely in/out of the surface
 	if (edgeTable[CubeIndex] == 0)
