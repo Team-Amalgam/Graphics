@@ -1,44 +1,45 @@
 #pragma once
 #include "MarchingCubes.h"
 
-float SphereFunction(const Vec3f&);
-float RandomFunction(const Vec3f&);
-float CrazyFunction(const Vec3f&);
-float PlaneFunction(const Vec3f&);
-double OkByeFunction(Vec3f, int = 4, Vec3f = { 0,0,0 }, int = 1);
-float interPolate(float input1, float input2, float position, float val1, float val2);
-Vec3f interPolateColors(float input1, float input2, float position, Vec3f Color1, Vec3f Color2);
+float SphereFunction(const Vec3&);
+float RandomFunction(const Vec3&);
+float CrazyFunction(const Vec3&);
+float PlaneFunction(const Vec3&);
+double OkByeFunction(Vec3, int = 4, Vec3 = { 0,0,0 }, int = 1);
+Color interPolateColors(float input1, float input2, float position, Color Color1, Color Color2);
 float Fourier(float f1, float f2);
 
 class GeneratedCube {
 private:
-
+    Vertex* mesh;
     static const UINT FunctionCount = 4;
-    float (*_functions[FunctionCount])(const Vec3f& Pos);
+    float (*_functions[FunctionCount])(const Vec3& Pos);
     UINT _functionIndex;
 
     UINT _XCount, _YCount, _ZCount;
-    Vec3f _Start, _End, _Diff;
+    Vec3 _Start, _End, _Diff;
     float _CellSize;
 
-    std::vector<Vec3f> _AllVertices;
+    std::vector<Vec3> _AllVertices;
     std::vector<TriMeshFace> _AllFaces;
 
     //Mesh
     UINT _VertexCount, _IndexCount;
     float* _Vertices;
     DWORD* _Indices;
-    int compiledVertexSize = 9;
 
     //Temp Storage
+    //Temp Storage
     TriMeshFace _FaceStorage[10];
-    Vec3f _VertexStorage[15];
+    Vec3 _VertexStorage[15];
 
-    float (*_Function)(const Vec3f& Pos);
+    float (*_Function)(const Vec3& Pos);
     float _Epsilon;
 
 public:
-    GeneratedCube() {
+    std::vector<Triangle> triangles;
+
+    GeneratedCube(float boxSize=10.0f, float cellSize=1.0f) {
         _Vertices = 0;
         _Indices = 0;
         _VertexCount = 0;
@@ -50,17 +51,18 @@ public:
         _functions[1] = RandomFunction;
         _functions[2] = CrazyFunction;
         _functions[3] = PlaneFunction;
+        triangles= std::vector<Triangle>();
 
-        IsoApproximate(2.0f, 0.1f, _functions[_functionIndex]);
+        IsoApproximate(boxSize, cellSize, _functions[_functionIndex]);
         //IsoApproximate(1.25f, 0.025f, _functions[_functionIndex]);
     }
     //Generate Surface
-    void IsoApproximate(float BoxSize, float CellSize, float (*Function)(const Vec3f& Pos))
+    void IsoApproximate(float BoxSize, float CellSize, float (*Function)(const Vec3& Pos))
     {
-        Vec3f End(BoxSize, BoxSize, BoxSize);
+        Vec3 End = { BoxSize, BoxSize, BoxSize, 1.0f };
         IsoApproximate(-End, End, CellSize, Function);
     }
-    void IsoApproximate(const Vec3f& Start, const Vec3f& End, float CellSize, float (*Function)(const Vec3f& Pos))
+    void IsoApproximate(const Vec3& Start, const Vec3& End, float CellSize, float (*Function)(const Vec3& Pos))
     {
         _Function = Function;
         _CellSize = CellSize;
@@ -92,12 +94,12 @@ public:
         const UINT noOfVertices = _AllVertices.size();
         AllocateMesh(noOfVertices, _AllFaces.size());
 
-        MeshVertex* meshVertices = new MeshVertex[noOfVertices];
+        mesh = new Vertex[noOfVertices];
         for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++)
         {
-            MeshVertex& CurVertex=meshVertices[VertexIndex];
-            CurVertex.Pos = _AllVertices[VertexIndex];
-            CalcGradient(CurVertex.Pos, CurVertex.Normal);            
+            Vertex& CurVertex= mesh[VertexIndex];
+            CurVertex.position = _AllVertices[VertexIndex];
+            CalcGradient(CurVertex.position, CurVertex.normal);            
         }
         for (UINT FaceIndex = 0; FaceIndex < _AllFaces.size(); FaceIndex++)
         {
@@ -106,61 +108,59 @@ public:
             _Indices[FaceIndex * 3 + 1] = CurFace.I[1];
             _Indices[FaceIndex * 3 + 2] = CurFace.I[2];
         }
-        ColorbyNormals(meshVertices);
-        //ColorbyInterPolation(meshVertices);
-        ConvertToVertices(meshVertices);
-        delete[] meshVertices;
+        //ColorbyNormals(mesh);
+        ColorbyThresHold(mesh);
+        //ConvertToVertices(mesh);
+        FillTriangles(mesh);
     }
-    void ConvertToVertices(MeshVertex* meshVertices) {
+    void ConvertToVertices(Vertex* meshVertices) {
         const UINT noOfVertices = _AllVertices.size();
         
 		for (UINT VertexIndex = 0; VertexIndex < noOfVertices; VertexIndex++) {
-			_Vertices[compiledVertexSize * VertexIndex + 0] = meshVertices[VertexIndex].Pos.x;
-			_Vertices[compiledVertexSize * VertexIndex + 1] = meshVertices[VertexIndex].Pos.y;
-			_Vertices[compiledVertexSize * VertexIndex + 2] = meshVertices[VertexIndex].Pos.z;
-			_Vertices[compiledVertexSize * VertexIndex + 3] = meshVertices[VertexIndex].Normal.x;
-			_Vertices[compiledVertexSize * VertexIndex + 4] = meshVertices[VertexIndex].Normal.y;
-			_Vertices[compiledVertexSize * VertexIndex + 5] = meshVertices[VertexIndex].Normal.z;
-            _Vertices[compiledVertexSize * VertexIndex + 6] = meshVertices[VertexIndex].Color.x;
-            _Vertices[compiledVertexSize * VertexIndex + 7] = meshVertices[VertexIndex].Color.y;
-            _Vertices[compiledVertexSize * VertexIndex + 8] = meshVertices[VertexIndex].Color.z;
+			_Vertices[9 * VertexIndex + 0] = meshVertices[VertexIndex].position.x;
+			_Vertices[9 * VertexIndex + 1] = meshVertices[VertexIndex].position.y;
+			_Vertices[9 * VertexIndex + 2] = meshVertices[VertexIndex].position.z;
+			_Vertices[9 * VertexIndex + 3] = meshVertices[VertexIndex].normal.x;
+			_Vertices[9 * VertexIndex + 4] = meshVertices[VertexIndex].normal.y;
+			_Vertices[9 * VertexIndex + 5] = meshVertices[VertexIndex].normal.z;
+            _Vertices[9 * VertexIndex + 6] = meshVertices[VertexIndex].color.r;
+            _Vertices[9 * VertexIndex + 7] = meshVertices[VertexIndex].color.g;
+            _Vertices[9 * VertexIndex + 8] = meshVertices[VertexIndex].color.b;
         }
     }
-    void ColorbyNormals(MeshVertex* meshVertices,
-        float fr = 1.0f, float fg = 1.0f, float fb = 1.0f)
+    void ColorbyNormals(Vertex* meshVertices,
+        float fr = 256.0f, float fg = 256.0f, float fb = 256.0f)
 	{
 		for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {
 
-			float r = (meshVertices[VertexIndex].Normal.x / 2.0f + 0.5f) * fr;
-			float g = (meshVertices[VertexIndex].Normal.y / 2.0f + 0.5f) * fg;
-			float b = (meshVertices[VertexIndex].Normal.z / 2.0f + 0.5f) * fb;    //remap each normal's (x, y, z) to (r, g, b)
-			meshVertices[VertexIndex].Color = Vec3f(r, g, b);
+			unsigned char r = (meshVertices[VertexIndex].normal.x / 2.0f + 0.5f) * fr;
+			unsigned char g = (meshVertices[VertexIndex].normal.y / 2.0f + 0.5f) * fg;
+			unsigned char b = (meshVertices[VertexIndex].normal.z / 2.0f + 0.5f) * fb;    //remap each normal's (x, y, z) to (r, g, b)
+			meshVertices[VertexIndex].color = Color(r, g, b, 0xff);
 		}
 	}
-    void ColorbyInterPolation(MeshVertex* meshVertices,
-        float fr = 1.0f, float fg = 1.0f, float fb = 1.0f)
+    void ColorbyInterPolation(Vertex* meshVertices)
     {
         for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {           
-            Vec3f ColorA = Vec3f(0.0f * fr / 255, 150.0f * fg / 255, 198.0f * fb / 255); //from  0, 150, 199 //Lower Color
-            Vec3f ColorB = Vec3f(233.0f * fr / 255, 196.0f * fg / 255, 106.0f * fb / 255); //to   233, 196, 106 //Upper Color
-            meshVertices[VertexIndex].Color = interPolateColors(0.3f, 0.8f, meshVertices[VertexIndex].Pos.y, ColorA, ColorB);
+            Color ColorA = Color(0.0f, 150.0f, 198.0f, 0xff); //from  0, 150, 199 //Lower Color
+            Color ColorB = Color(233.0f, 196.0f, 106.0f, 0xff); //to   233, 196, 106 //Upper Color
+            meshVertices[VertexIndex].color = interPolateColors(0.3f, 0.8f, meshVertices[VertexIndex].position.y, ColorA, ColorB);
         }
     }
-    void ColorbyThresHold(MeshVertex* meshVertices,
-        float fr = 1.0f, float fg = 1.0f, float fb = 1.0f)
+    void ColorbyThresHold(Vertex* meshVertices)
     {
         for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {
-            Vec3f ColorL1 = Vec3f(  3.0f * fr / 255,   4.0f * fg / 255,  94.0f * fb / 255); //from   3,   4,  94 //Lower Color1
-            Vec3f ColorL2 = Vec3f(  0.0f * fr / 255, 150.0f * fg / 255, 198.0f * fb / 255); //from   0, 150, 199 //Lower Color2
-            Vec3f ColorU1 = Vec3f(108.0f * fr / 255, 197.0f * fg / 255,  81.0f * fb / 255); //to   108, 197, 81 //Upper Color1
-            Vec3f ColorU2 = Vec3f(233.0f * fr / 255, 196.0f * fg / 255, 106.0f * fb / 255); //to   233, 196, 106 //Upper Color2
+            Color ColorL1 = Color(  3.0f,   4.0f,  94.0f, 0xff); //from   3,   4,  94 //Lower Color1
+            Color ColorL2 = Color(  0.0f, 150.0f, 198.0f, 0xff); //from   0, 150, 199 //Lower Color2
+            Color ColorU1 = Color(108.0f, 197.0f,  81.0f, 0xff); //to   108, 197, 81 //Upper Color1
+            Color ColorU2 = Color(233.0f, 196.0f, 106.0f, 0xff); //to   233, 196, 106 //Upper Color2
             float lower = -1.0f, threshold = 0.1f, upper = 1.0f;
             //float lower = 0.2f, threshold = 0.4f, upper = 0.7f;
             //remap each normal's (x, y, z) to (r, g, b)
-            if (meshVertices[VertexIndex].Pos.y < threshold) 
-                meshVertices[VertexIndex].Color = interPolateColors(lower, threshold, meshVertices[VertexIndex].Pos.y, ColorL1, ColorL2);
+            if (meshVertices[VertexIndex].position.y < threshold) 
+                meshVertices[VertexIndex].color = interPolateColors(lower, threshold, meshVertices[VertexIndex].position.y, ColorL2, ColorL2);
             else 
-                meshVertices[VertexIndex].Color = interPolateColors(threshold, upper, meshVertices[VertexIndex].Pos.y, ColorU1, ColorU2);
+                meshVertices[VertexIndex].color = interPolateColors(threshold, upper, meshVertices[VertexIndex].position.y, ColorU1, ColorU2);
         }
     }
     template <class type> __forceinline void Swap(type& t1, type& t2)
@@ -168,6 +168,14 @@ public:
         type Temp = t1;
         t1 = t2;
         t2 = Temp;
+    }
+    void FillTriangles(Vertex* meshVertices) {
+        for (UINT VertexIndex = 0; VertexIndex < _IndexCount/3; VertexIndex++) {
+            Triangle tri;
+            for (int i = 0; i < 3; i++) 
+                tri.vertex[i] = mesh[_Indices[VertexIndex * 3 + i]];   
+            triangles.push_back(tri);
+        }
     }
     //Mesh
     void FreeMesh()
@@ -191,16 +199,17 @@ public:
         if (NewVertexCount == 0 || NewFaceCount == 0) return;
         _VertexCount = NewVertexCount;
         _IndexCount = NewFaceCount * 3;
-        _Vertices = new float[_VertexCount*compiledVertexSize];
+        _Vertices = new float[_VertexCount];
         _Indices = new DWORD[_IndexCount];
     }
-    void CalcGradient(const Vec3f& Pos, Vec3f& Normal)
+    void CalcGradient(const Vec3& Pos, Vec3& Normal)
     {
         float value = _Function(Pos);
-        Normal.x = (_Function(Vec3f(Pos.x + _Epsilon, Pos.y, Pos.z)) - value);
-        Normal.y = (_Function(Vec3f(Pos.x, Pos.y + _Epsilon, Pos.z)) - value);
-        Normal.z = (_Function(Vec3f(Pos.x, Pos.y, Pos.z + _Epsilon)) - value);
-        Normal = glm::normalize(Normal);
+        Normal.x = (_Function({Pos.x + _Epsilon, Pos.y, Pos.z, 1.0f}) - value);
+        Normal.y = (_Function({Pos.x, Pos.y + _Epsilon, Pos.z, 1.0f}) - value);
+        Normal.z = (_Function({ Pos.x, Pos.y, Pos.z + _Epsilon, 1.0f }) - value);
+        Normal.normalize();
+        Normal = {-Normal.x, -Normal.y, Normal.z, Normal.w};
     }
     void FillGrid(float* Grid, int z)
     {
@@ -208,7 +217,7 @@ public:
         {
             for (UINT y = 0; y < _YCount; y++)
             {
-                Vec3f Pos = Vec3f(_Start.x + _CellSize * x, _Start.y + _CellSize * y, _Start.z + _CellSize * (z + 1));
+                Vec3 Pos = { _Start.x + _CellSize * x, _Start.y + _CellSize * y, _Start.z + _CellSize * (z + 1) , 1.0f};
                 Grid[x * _YCount + y] = _Function(Pos);
             }
         }
@@ -241,20 +250,20 @@ public:
             for (UINT y = 0; y < _YCount - 1; y++)
             {
                 GRIDCELL g;
-                g.p[0] = Vec3f(_Start.x + _CellSize * (x + 0), _Start.y + _CellSize * (y + 0), _Start.z + _CellSize * (z + 0));
-                g.p[1] = Vec3f(_Start.x + _CellSize * (x + 1), _Start.y + _CellSize * (y + 0), _Start.z + _CellSize * (z + 0));
-                g.p[2] = Vec3f(_Start.x + _CellSize * (x + 1), _Start.y + _CellSize * (y + 1), _Start.z + _CellSize * (z + 0));
-                g.p[3] = Vec3f(_Start.x + _CellSize * (x + 0), _Start.y + _CellSize * (y + 1), _Start.z + _CellSize * (z + 0));
+                g.p[0] = {_Start.x + _CellSize * (x + 0), _Start.y + _CellSize * (y + 0), _Start.z + _CellSize * (z + 0), 1.0f };
+                g.p[1] = {_Start.x + _CellSize * (x + 1), _Start.y + _CellSize * (y + 0), _Start.z + _CellSize * (z + 0), 1.0f };
+                g.p[2] = {_Start.x + _CellSize * (x + 1), _Start.y + _CellSize * (y + 1), _Start.z + _CellSize * (z + 0), 1.0f };
+                g.p[3] = {_Start.x + _CellSize * (x + 0), _Start.y + _CellSize * (y + 1), _Start.z + _CellSize * (z + 0), 1.0f };
 
                 g.val[0] = TopVals[x * _YCount + y];
                 g.val[1] = TopVals[(x + 1) * _YCount + y];
                 g.val[2] = TopVals[(x + 1) * _YCount + y + 1];
                 g.val[3] = TopVals[x * _YCount + y + 1];
 
-                g.p[4] = Vec3f(_Start.x + _CellSize * (x + 0), _Start.y + _CellSize * (y + 0), _Start.z + _CellSize * (z + 1));
-                g.p[5] = Vec3f(_Start.x + _CellSize * (x + 1), _Start.y + _CellSize * (y + 0), _Start.z + _CellSize * (z + 1));
-                g.p[6] = Vec3f(_Start.x + _CellSize * (x + 1), _Start.y + _CellSize * (y + 1), _Start.z + _CellSize * (z + 1));
-                g.p[7] = Vec3f(_Start.x + _CellSize * (x + 0), _Start.y + _CellSize * (y + 1), _Start.z + _CellSize * (z + 1));
+                g.p[4] = {_Start.x + _CellSize * (x + 0), _Start.y + _CellSize * (y + 0), _Start.z + _CellSize * (z + 1), 1.0f};
+                g.p[5] = {_Start.x + _CellSize * (x + 1), _Start.y + _CellSize * (y + 0), _Start.z + _CellSize * (z + 1), 1.0f};
+                g.p[6] = {_Start.x + _CellSize * (x + 1), _Start.y + _CellSize * (y + 1), _Start.z + _CellSize * (z + 1), 1.0f};
+                g.p[7] = {_Start.x + _CellSize * (x + 0), _Start.y + _CellSize * (y + 1), _Start.z + _CellSize * (z + 1), 1.0f};
 
                 g.val[4] = BottomVals[x * _YCount + y];
                 g.val[5] = BottomVals[(x + 1) * _YCount + y];
@@ -278,11 +287,14 @@ public:
     }
     //Get Values
     float* getVertices(size_t* size=0) {
-        if (size) *size = _VertexCount*compiledVertexSize;
+        if (size) *size = _VertexCount;
         return _Vertices;
     }
     unsigned int* getIndices(size_t* size = 0) {
         if (size) *size = _IndexCount;
         return (unsigned int*)_Indices;
+    }
+    ~GeneratedCube() {
+        delete[] mesh;
     }
 };

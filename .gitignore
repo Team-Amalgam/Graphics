@@ -2,7 +2,9 @@
 *.d
 
 #Debug Folder
-Debug/
+ourBetterGraphics_eyy_/Debug/
+src/junk.cpp
+Assets/Results/
 
 # Compiled Object files
 *.slo
@@ -22,6 +24,12 @@ Debug/
 # Fortran module files
 *.mod
 *.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
 
 # Executables
 *.exe
@@ -273,3 +281,5 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+*.blend1
+*.blend
