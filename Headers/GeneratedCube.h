@@ -5,9 +5,10 @@ float SphereFunction(const Vec3f&);
 float RandomFunction(const Vec3f&);
 float CrazyFunction(const Vec3f&);
 float PlaneFunction(const Vec3f&);
-double KritiKoFunction(Vec3f, int = 4, Vec3f = { 0,0,0 }, int = 1);
+double OkByeFunction(Vec3f, int = 4, Vec3f = { 0,0,0 }, int = 1);
 float interPolate(float input1, float input2, float position, float val1, float val2);
 Vec3f interPolateColors(float input1, float input2, float position, Vec3f Color1, Vec3f Color2);
+float Fourier(float f1, float f2);
 
 class GeneratedCube {
 private:
@@ -105,7 +106,7 @@ public:
             _Indices[FaceIndex * 3 + 1] = CurFace.I[1];
             _Indices[FaceIndex * 3 + 2] = CurFace.I[2];
         }
-        ColorbyThresHold(meshVertices);
+        ColorbyNormals(meshVertices);
         //ColorbyInterPolation(meshVertices);
         ConvertToVertices(meshVertices);
         delete[] meshVertices;
@@ -153,7 +154,8 @@ public:
             Vec3f ColorL2 = Vec3f(  0.0f * fr / 255, 150.0f * fg / 255, 198.0f * fb / 255); //from   0, 150, 199 //Lower Color2
             Vec3f ColorU1 = Vec3f(108.0f * fr / 255, 197.0f * fg / 255,  81.0f * fb / 255); //to   108, 197, 81 //Upper Color1
             Vec3f ColorU2 = Vec3f(233.0f * fr / 255, 196.0f * fg / 255, 106.0f * fb / 255); //to   233, 196, 106 //Upper Color2
-            float lower = 0.2f, threshold = 0.4f, upper = 0.7f;
+            float lower = -1.0f, threshold = 0.1f, upper = 1.0f;
+            //float lower = 0.2f, threshold = 0.4f, upper = 0.7f;
             //remap each normal's (x, y, z) to (r, g, b)
             if (meshVertices[VertexIndex].Pos.y < threshold) 
                 meshVertices[VertexIndex].Color = interPolateColors(lower, threshold, meshVertices[VertexIndex].Pos.y, ColorL1, ColorL2);

@@ -26,11 +26,27 @@ float CrazyFunction(const Vec3f& Pos)
     return sinf(P.x * P.y + P.x * P.z + P.y * P.z) + sinf(P.x * P.y) + sinf(P.y * P.z) + sinf(P.x * P.z) - 1.0f;
 }
 float PlaneFunction(const Vec3f& Pos)
-{    
-    return -Pos.y + KritiKoFunction(Pos); //+Kriti ko function
-    //return -Pos.y+ sinf(2*Pos.z+) * cosf(2*Pos.x); //Ramailo terrain
+{
+    //return -Pos.y + OkByeFunction(Pos); //+Kriti ko function
+    return -Pos.y + (Fourier(Pos.x, Pos.z) + Fourier(Pos.z, Pos.z)) / 2; //Fourier terrain
+    //return -Pos.y + (expf(Pos.x*10) + expf(Pos.z*10)) / 2;//Ramilo Function
 }
-double KritiKoFunction(Vec3f Pos, int octaves, Vec3f offSet, int multiplier)
+float Fourier(float f1, float f2) {
+    /*float a0 = 1.f,
+        an = 5.f / (2 / 3.14),
+        bn = 2.f / 3.14,
+        sum = a0/2;*/
+    float pi = 3.14159;
+    float a0 = 2*sinhf(pi)/pi, an, bn,
+        sum = a0/2;
+    for (float i = 1; i < 60; i++) {
+        an = 2 * cosf(i * pi) * sinhf(pi) / (pi * (1 + i * i));
+        bn = -2 * i * cosf(i * pi) * sinhf(pi) / (pi * (1 + i * i));
+        sum += an * cosf(i * 2 * 3.14 * f1) + bn * sinf(i * 2 * 3.14 * f1);
+    }
+    return sum;
+}
+double OkByeFunction(Vec3f Pos, int octaves, Vec3f offSet, int multiplier)
 {
     //OUTPUTS
     double maxValue = 0;
