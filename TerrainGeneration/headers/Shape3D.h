@@ -4,6 +4,7 @@
 #include "Mat4x4.h"
 #include "GeneratedCube.h"
 
+extern double freq;
 struct Controller {
 	bool up = 0, down = 0, left = 0, right = 0,
 		lUp = 0, lDown = 0, lLeft = 0, lRight = 0,
@@ -52,10 +53,32 @@ class Shape3D {
 	float fTheta = 0;
 
 	bool wireframe = 0, colored = 1, shaded = 1;
+
+	static std::mutex meshesMutex;
+	std::future<void> future;
 public:
 	Shape3D() {
+#define ASYNC 1
+#if ASYNC
+		std::async(std::launch::async, LoadModel, &mesh);
+#else
+		LoadModel2(&mesh);
+#endif
+		//Load Texture
+		texture = NULL;
+		//texture = new Texture("../Assets/Textures/house.png");
+
+		matProj = Mat4x4::MakeProjection();
+	}
+	static void LoadModel(Mesh* mesh) {
+		std::lock_guard<std::mutex> lock(meshesMutex);
+		mesh->triangles.clear();
+		//For Release
+		//mesh.LoadFromObjectFile("Light.obj");
+		//mesh.LoadFromObjectFile("Object.obj");
+		
 		//Loading Light
-		mesh.LoadFromObjectFile("./Assets/sun.obj");
+		mesh->LoadFromObjectFile("./Assets/sun.obj");
 
 		//The Cube
 		//mesh.triangles = {
@@ -95,36 +118,86 @@ public:
 		//Marching Cubes
 		GeneratedCube marchingCube(32.0f, 2.0f);
 		marchingCube.triangles;
-		mesh.triangles.insert(mesh.triangles.end(), marchingCube.triangles.begin(), marchingCube.triangles.end());
-		
+		mesh->triangles.insert(mesh->triangles.end(), marchingCube.triangles.begin(), marchingCube.triangles.end());
+
 		GeneratedCube waterCube(32.0f, 2.0f, 2, 3);
 		marchingCube.triangles;
-		mesh.triangles.insert(mesh.triangles.end(), waterCube.triangles.begin(), waterCube.triangles.end());
-		
+		mesh->triangles.insert(mesh->triangles.end(), waterCube.triangles.begin(), waterCube.triangles.end());
+	}
+	static void LoadModel2(Mesh* mesh) {
 		//For Release
 		//mesh.LoadFromObjectFile("Light.obj");
 		//mesh.LoadFromObjectFile("Object.obj");
+		
+		//Loading Light
+		mesh->LoadFromObjectFile("./Assets/sun.obj");
 
-		//Load Texture
-		texture = NULL;
-		//texture = new Texture("../Assets/Textures/house.png");
+		//The Cube
+		//mesh.triangles = {
+		//	// SOUTH
+		//	{ 0.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																																				  
+		//	// EAST           																	   		  												 
+		//	{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  			
+		//	// NORTH           																		 
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  				
+		//	// WEST            																		   	
+		//	{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  				  
+		//	// TOP             																		   	   
+		//	{ 0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  				 
+		//	// BOTTOM          																	  		
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//};
 
-		matProj = Mat4x4::MakeProjection();
+		//Loading obj
+		//mesh.LoadFromObjectFile("../Assets/Church.obj");
+		//mesh.LoadFromObjectFile("../Assets/Cube2.obj");
+		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
+		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
+		//mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
+		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
+
+		//Marching Cubes
+		GeneratedCube marchingCube(32.0f, 2.0f);
+		marchingCube.triangles;
+		mesh->triangles.insert(mesh->triangles.end(), marchingCube.triangles.begin(), marchingCube.triangles.end());
+
+		GeneratedCube waterCube(32.0f, 2.0f, 2, 3);
+		marchingCube.triangles;
+		mesh->triangles.insert(mesh->triangles.end(), waterCube.triangles.begin(), waterCube.triangles.end());
 	}
 	void checkInput(Controller& c, float elapsedTime = 0) {
 		elapsedTime *= 0.000001f;
 		//fTheta += elapsedFrames;
 		float change = speed * elapsedTime;
 		Vec3 vertical = up * change;
+		Vec3 forward = lookDir * change;
+		Vec3 horizontal = up * lookDir * change;
 
-		if (c.up)
-			camera += vertical;
-		if (c.down)
+		if (c.up) {
+		camera += vertical;
+		freq += 0.01f;
+		std::async(std::launch::async, LoadModel, &mesh);
+		}
+		if (c.down) {
 			camera -= vertical;
+			freq -= 0.01f;
+			std::async(std::launch::async, LoadModel, &mesh);
+		}
 		if (c.left)
-			camera.x += change;
+			camera += horizontal;
 		if (c.right)
-			camera.x -= change;
+			camera -= horizontal;
 
 		if (c.lUp) {
 			lightDirection.y += change;
@@ -151,7 +224,6 @@ public:
 			lightPosition.z += change;
 		}
 
-		Vec3 forward = lookDir * change;
 
 		if (c.forward)
 			camera += forward;

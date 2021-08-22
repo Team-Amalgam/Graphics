@@ -9,6 +9,7 @@
 #include <glm/gtc/noise.hpp>
 #include <algorithm>
 #include <list>
+#include <future>
 #include "Image.h"
 
 constexpr float pi = 3.14159f;

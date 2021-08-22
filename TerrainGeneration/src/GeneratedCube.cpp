@@ -42,25 +42,28 @@ float Fourier(float f1, float f2) {
     }
     return sum;
 }
+double freq = 0.045f;
 double NoiseFunction(Vec3 Pos, int octaves, Vec3 offSet, int multiplier)
 {
+    double oldFreq = freq;
     //OUTPUTS
     double maxValue = 0;
     double total = 0;
 
     //variables
-    double freq = 0.045f;
+    //double freq = 0.045f;
     double amp = 10.f;
     double persistence = 0.25f;
     
-        for (unsigned i = 0; i < octaves; ++i)
-        {
-            glm::vec3 p((Pos.x * freq + offSet.x) * multiplier, (Pos.y * freq + offSet.y) * multiplier, (Pos.z * freq + offSet.z) * multiplier);
+    for (unsigned i = 0; i < octaves; ++i)
+    {
+        glm::vec3 p((Pos.x * freq + offSet.x) * multiplier, (Pos.y * freq + offSet.y) * multiplier, (Pos.z * freq + offSet.z) * multiplier);
 
-            total += ((glm::simplex(p) + 1.0) / 2.0) * amp;
-            maxValue += amp;
-            amp *= persistence;
-            freq *= 2;
-        }
-        return total;// / maxValue;
+        total += ((glm::simplex(p) + 1.0) / 2.0) * amp;
+        maxValue += amp;
+        amp *= persistence;
+        freq *= 2;
+    }
+    freq = oldFreq;
+    return total;// / maxValue;
 }

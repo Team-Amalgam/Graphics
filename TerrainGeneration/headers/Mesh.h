@@ -17,6 +17,9 @@ struct Mesh {
 		int v, vt, vn;
 	};
 
+	Mesh() {
+		triangles.clear();
+	}
 	//Make this boi load colors
 	bool LoadFromObjectFile(std::string FileName) {
 		std::ifstream f(FileName);
