@@ -1,6 +1,5 @@
 #pragma once
 #include "ourBetterGraphics_eyy_.h"
-#include<chrono>
 
 LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_param, LPARAM l_param)
 {
@@ -137,13 +136,17 @@ int CALLBACK WinMain(
 							controller.day = !controller.day;
 						}
 
-						if (vkCode == 'B')
+						if (vkCode == 'U')
 						{
 							controller.yawF = true;
 						}
-						if (vkCode == 'N')
+						if (vkCode == 'O')
 						{
 							controller.yawB = true;
+						}
+						if (vkCode == 'B')
+						{
+							controller.generate = true;
 						}
 						if (vkCode == 'J')
 						{
