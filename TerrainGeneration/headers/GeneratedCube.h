@@ -7,7 +7,7 @@ float SphereFunction(const Vec3&);
 float RandomFunction(const Vec3&);
 float WaterFunction(const Vec3&);
 float PlaneFunction(const Vec3&);
-double NoiseFunction(Vec3, int = 4, Vec3 = { 0,0,0 }, int = 1);
+double NoiseFunction(Vec3, int = 4, int = 1);
 Color interPolateColors(float input1, float input2, float position, Color Color1, Color Color2);
 float Fourier(float f1, float f2);
 
@@ -42,7 +42,7 @@ private:
 public:
     std::vector<Triangle> triangles;
 
-    GeneratedCube(float boxSize=10.0f, float cellSize=1.0f, UINT functionIndex=3, UINT colorFunctionIndex=1) {
+    GeneratedCube(float cellSize=1.0f, float boxSizeX = 10.0f, float boxSizeZ= 10.0f, float boxSizeY = 10.0f, UINT functionIndex=3, UINT colorFunctionIndex=1) {
         _Vertices = 0;
         _Indices = 0;
         _VertexCount = 0;
@@ -57,13 +57,13 @@ public:
 
         _colorFunctionIndex = colorFunctionIndex;   
 
-        IsoApproximate(boxSize, cellSize, _functions[_functionIndex]);
+        IsoApproximate(boxSizeX,boxSizeZ, boxSizeY, cellSize, _functions[_functionIndex]);
         //IsoApproximate(1.25f, 0.025f, _functions[_functionIndex]);
     }
     //Generate Surface
-    void IsoApproximate(float BoxSize, float CellSize, float (*Function)(const Vec3& Pos))
+    void IsoApproximate(float BoxSizeX, float BoxSizeZ, float BoxSizeY, float CellSize, float (*Function)(const Vec3& Pos))
     {
-        Vec3 End = { BoxSize, BoxSize, BoxSize, 1.0f };
+        Vec3 End = { BoxSizeX, BoxSizeY, BoxSizeZ, 1.0f };
         IsoApproximate(-End, End, CellSize, Function);
     }
     void IsoApproximate(const Vec3& Start, const Vec3& End, float CellSize, float (*Function)(const Vec3& Pos))

@@ -43,7 +43,8 @@ float Fourier(float f1, float f2) {
     return sum;
 }
 double freq = 0.045f;
-double NoiseFunction(Vec3 Pos, int octaves, Vec3 offSet, int multiplier)
+Vec3 offSet = { 0,0,0,0 };
+double NoiseFunction(Vec3 Pos, int octaves, int multiplier)
 {
     double oldFreq = freq;
     //OUTPUTS

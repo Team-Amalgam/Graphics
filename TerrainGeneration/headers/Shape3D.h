@@ -8,6 +8,7 @@ constexpr int FLOAT_MIN = 20;
 constexpr int FLOAT_MAX = 55;
 
 extern double freq;
+extern Vec3 offSet;
 
 struct Controller {
 	bool up = 0, down = 0, left = 0, right = 0,
@@ -17,7 +18,7 @@ struct Controller {
 		generate = 0,
 		yawL = 0, yawR = 0, 
 		yawF = 0, yawB = 0, 
-		colored = 1, wireframe = 0, shaded = 1, day=1;
+		colored = 1, wireframe = 0, shaded = 1, day=0;
 
 	void reset() {
 		up = 0; down = 0; left = 0; right = 0;
@@ -35,12 +36,12 @@ class Shape3D {
 	Texture* texture;
 	
 	//Vec3 camera{ 0.0f, 0.0f, 0.0f };
-	Vec3 camera{ 0.0f, 15.0f, -20.0f };
+	Vec3 camera{ 0.0f, 15.0f, -80.0f };
 
 	//Lighting Parameters
 	Vec3 lightDirection = { 1.0f, 1.0f, 1.0f };
 	//Vec3 lightPosition = { 5.0f, 5.0f,5.0f };
-	Vec3 lightPosition = { 0.0f, 20.0f, 5.0f };
+	Vec3 lightPosition = { 0.0f, 80.0f, 5.0f };
 	float Ka = 0.75f, Kd = 0.75f, Ks = 0.5f,
 		Ia = 5.0f, Il = 7.0f;
 	int n = 10;
@@ -54,16 +55,15 @@ class Shape3D {
 	float pitch = 0;
 	
 	int sunFaces = 80;
-	bool day=true;
+	bool day=false;
+	float halfTime = pi*0.5f;
 
 	float fTheta = 0;
 
 	bool wireframe = 0, colored = 1, shaded = 1;
 
 	static std::mutex meshesMutex;
-	std::future<void> future;
-
-	
+	std::future<void> future;	
 
 public:
 	Shape3D() {
@@ -77,64 +77,46 @@ public:
 	static void LoadModel(Mesh* mesh) {
 		std::lock_guard<std::mutex> lock(meshesMutex);
 		mesh->triangles.clear();
+
 		//For Release
 		mesh->LoadFromObjectFile("Light.obj");
-		//mesh.LoadFromObjectFile("Object.obj");
 		
 		//Loading Light
 		mesh->LoadFromObjectFile("./Assets/sun.obj");
-
-		//The Cube
-		//mesh.triangles = {
-		//	// SOUTH
-		//	{ 0.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-		//	{ 0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-		//																																				  
-		//	// EAST           																	   		  												 
-		//	{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-		//	{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-		//																				  			
-		//	// NORTH           																		 
-		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-		//																				  				
-		//	// WEST            																		   	
-		//	{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-		//	{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-		//																				  				  
-		//	// TOP             																		   	   
-		//	{ 0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-		//	{ 0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-		//																				  				 
-		//	// BOTTOM          																	  		
-		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-		//};
-
-		//Loading obj
-		//mesh.LoadFromObjectFile("../Assets/Church.obj");
-		//mesh.LoadFromObjectFile("../Assets/Cube2.obj");
-		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
-		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
-		//mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
-		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
-
+		
 		//Marching Cubes
-		GeneratedCube marchingCube(32.0f, 2.0f);
+		GeneratedCube marchingCube(2.0f, 80.0f, 80.0f, 15.0f);
 		marchingCube.triangles;
 		mesh->triangles.insert(mesh->triangles.end(), marchingCube.triangles.begin(), marchingCube.triangles.end());
 
-		GeneratedCube waterCube(32.0f, 2.0f, 2, 3);
+		GeneratedCube waterCube(2.0f, 80.0f, 80.0f, 10.0f, 2, 3);
 		marchingCube.triangles;
 		mesh->triangles.insert(mesh->triangles.end(), waterCube.triangles.begin(), waterCube.triangles.end());
 	}
-	void checkInput(Controller& c, float elapsedTime = 0) {
+	void checkInput(Controller& c,float newIa, float elapsedTime = 0) {
 		elapsedTime *= 0.000001f;
+		
 		//fTheta += elapsedFrames;
 		float change = speed * elapsedTime;
+		if(day)
+			halfTime += change*pi/180;
+		else
+			halfTime -= change * pi / 180;
+
 		Vec3 vertical = up * change;
 		Vec3 forward = lookDir * change;
 		Vec3 horizontal = up * lookDir * change;
+
+		//sun cycle
+		Ia = newIa;
+		float radius = 160.0f;
+		lightPosition.x = radius *cos(halfTime);
+		lightPosition.y = radius *sin(halfTime);
+		consoleLogSpace(halfTime);
+
+		if (halfTime > pi || halfTime<0) {
+			c.day = !c.day;
+		}
 
 		//random
 		std::random_device rd;
@@ -148,14 +130,19 @@ public:
 			camera -= vertical;
 		}
 		if (c.generate) {
-			freq = distr(eng)/1000.f;
+			freq = distr(eng) / 1000.f;
 			std::async(std::launch::async, LoadModel, &mesh);
 		}
-		if (c.left)
-			camera += horizontal;
-		if (c.right)
-			camera -= horizontal;
-
+		if (c.left) {
+			//camera += horizontal;
+			offSet.x-=0.2f;
+			std::async(std::launch::async, LoadModel, &mesh);
+		}
+		if (c.right){
+			//camera -= horizontal;
+			offSet.x+= 0.2f;
+			std::async(std::launch::async, LoadModel, &mesh);
+		}
 		if (c.lUp) {
 			lightDirection.y += change;
 			lightPosition.y += change;
@@ -202,7 +189,6 @@ public:
 	}
 	void draw() {
 		Mesh toRaster;
-
 		//Tranlation
 		Mat4x4 matTrans;
 		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 3.0f);
@@ -262,13 +248,11 @@ public:
 					for (int k = 0; k < 3; k++) {
 						if (day) {
 							triTransformed.vertex[k].color = Color(0xff, 0xff, 0, 0xff);
-							Ia = 5.0f;
 							Il = 7.0f;
 						}
 						else {
 							triTransformed.vertex[k].color = Color(0xff, 0xff, 0xff, 0xff);
-							Ia = 1.0f;
-							Il = 2.0f;
+							Il = 3.0f;
 						}
 					}
 					for (int k = 0; k < 3; k++)

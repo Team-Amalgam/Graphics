@@ -32,7 +32,7 @@ void Swap(int& xp, int& yp);
 float distance(const float& x1, const float& y1, const float& x2, const float& y2);
 unsigned int interPolate(const float& input1, const float& input2, const float& position, const unsigned int& val1, const unsigned int& val2);
 unsigned char interPolate(const float& input1, const float& input2, const float& position, const unsigned char& val1, const unsigned char& val2);
-float interPolate(const float& input1, const float& input2, const float& position, const float& val1, const float& val2);
+float interPolate(const float input1, const float input2, const float position, const float& val1, const float& val2);
 float interPolate(const float& fraction, const float& val1, const float& val2);
 float interPolate(const float& fraction, const float& val1, const float& input1, const float& input2);
 

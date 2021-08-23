@@ -69,6 +69,14 @@ int CALLBACK WinMain(
 			Vect3<int> rot{0, 0, 0}, rotBool{0, 0, 0};
 			Controller controller;
 			unsigned deltatime;
+			
+			//DayLight Cycle
+			float totalTime=18.0f/12.0f*pi;
+			float Ia = 1.0f;
+			Color blue(173, 225, 229, 0xff), black(0, 0, 0, 0xff), red(0xff, 0x6f, 0x07, 0xff), midBlack(0x7f, 0x37, 3, 0xff);
+			float blueInt=5.0f, blackInt=1.0f, midBlackInt=2.0f, moonInt=2.5f;
+			Color screenColor(0, 0, 0, 0xff);
+
 			auto lastframe = std::chrono::high_resolution_clock::now();
 			Shape3D s;
 #pragma region Loop
@@ -77,7 +85,7 @@ int CALLBACK WinMain(
 			{
 				deltatime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - lastframe).count();
 				lastframe = std::chrono::high_resolution_clock::now();
-				consoleLogSpace(1e6 / deltatime);
+				//consoleLogSpace(1e6 / deltatime);
 				controller.reset();
 				while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
 				{
@@ -209,12 +217,70 @@ int CALLBACK WinMain(
 					}
 				}					
 #pragma endregion
-				if(controller.day)
-					ClrScr(Color(173, 225, 229, 0xff));
-				else 
-					ClrScr(Color(0, 0, 0, 0xff));
+				//Sky
+				float change = 10.f * deltatime * 0.000001f;
+				totalTime += change * pi / 180;
+
+				if (totalTime > 2*pi) totalTime = 0;
+
+				//time region
+				if (totalTime >= 0 && totalTime < 1.0f/12.f * pi) {
+					screenColor=interPolateColors(0, 1.0f / 12.f * pi,totalTime,midBlack,red);
+				}
+				else if (totalTime >= 1.0f / 12.f * pi && totalTime < 3.0f / 12.f * pi)
+				{
+					screenColor = interPolateColors(1.0f / 12.f * pi, 3.0f / 12.f * pi, totalTime, red, blue);
+				}
+				else if (totalTime >= 3.0f / 12.f * pi && totalTime < 9.0f / 12.f * pi)
+				{
+					screenColor = blue;
+				}
+				else if (totalTime >= 9.0f / 12.f * pi && totalTime < 11.0f / 12.f * pi)
+				{
+					screenColor = interPolateColors(9.0f / 12.f * pi, 11.0f / 12.f * pi, totalTime, blue, red);
+				}
+				else if (totalTime >= 11.0f / 12.f * pi && totalTime < 13.0f / 12.f * pi)
+				{
+					screenColor = interPolateColors(11.0f / 12.f * pi, 13.0f / 12.f * pi, totalTime, red, black);
+				}
+				else if (totalTime >= 13.0f / 12.f * pi && totalTime < 23.0f / 12.f * pi)
+				{
+					screenColor = black;
+				}
+				else if (totalTime >= 23.0f / 12.f * pi && totalTime < pi) {
+					screenColor = interPolateColors(23.0f / 12.f * pi, 2.f * pi, totalTime, red, midBlack);
+				}
+
+				//Intensity
+				if (totalTime >= 0 && totalTime < 3.0f / 12.f * pi) {
+					Ia = interPolate(0, 3.0f / 12.f * pi, totalTime, midBlackInt, blueInt);
+				}
+				else if (totalTime >= 3.0f / 12.f * pi && totalTime < 9.0f / 12.f * pi)
+				{
+					Ia = blueInt;
+				}
+				else if (totalTime >= 9.0f / 12.f * pi && totalTime < 13.0f / 12.f * pi)
+				{
+					Ia = interPolate(9.0f / 12.f * pi, 13.0f / 12.f * pi, totalTime, blueInt, blackInt);
+				}
+				else if (totalTime >= 13.0f / 12.f * pi && totalTime < 15.0f / 12.f * pi) {
+					Ia = interPolate(13.0f / 12.f * pi, 15.0f / 12.f * pi, totalTime, blackInt, moonInt);
+				}
+				else if (totalTime >= 15.0f / 12.f * pi && totalTime < 21.0f / 12.f * pi)
+				{
+					Ia = moonInt;
+				}
+				else if (totalTime >= 21.0f / 12.f * pi && totalTime < 23.0f / 12.f * pi)
+				{
+					Ia = interPolate(21.0f / 12.f * pi, 23.0f / 12.f * pi, totalTime, moonInt, blackInt);
+				}
+				else if (totalTime >= 23.0f / 12.f * pi && totalTime < 2.f * pi)
+				{
+					Ia = interPolate(23.0f / 12.f * pi, 2.0f * pi, totalTime, blackInt, midBlackInt);
+				}
+				ClrScr(screenColor);
 				//Lab5(x, y, z, p, textured, rot, rotBool);				
-				s.checkInput(controller, deltatime);
+				s.checkInput(controller,Ia, deltatime);
 				s.draw();
 				/*Image test("../Assets/Textures/house.png");
 				DrawImage(test);*/

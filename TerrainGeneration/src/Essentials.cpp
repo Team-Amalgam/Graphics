@@ -44,7 +44,7 @@ unsigned char interPolate(const float& input1, const float& input2, const float&
 	if (input1 == input2) return val1;
 	else return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
 }
-float interPolate(const float& input1, const float& input2, const float& position, const float& val1, const float& val2) {
+float interPolate(const float input1, const float input2, const float position, const float& val1, const float& val2) {
 	if (input1 == input2) return val1;
 	else return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
 }
