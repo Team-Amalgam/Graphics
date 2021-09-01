@@ -18,7 +18,9 @@ struct Controller {
 		generate = 0,
 		yawL = 0, yawR = 0, 
 		yawF = 0, yawB = 0, 
-		colored = 1, wireframe = 0, shaded = 1, day=0;
+		colored = 1, wireframe = 0, shaded = 1, 
+		day=1, dayCycle=1, stars=0, clouds=1, reloadStars=0;
+	float starOpacity=1.f, Ia=5.0f;
 
 	void reset() {
 		up = 0; down = 0; left = 0; right = 0;
@@ -33,8 +35,7 @@ struct Controller {
 class Shape3D {
 	Mesh mesh;
 	Mat4x4 matProj;
-	Texture* texture;
-	
+
 	//Vec3 camera{ 0.0f, 0.0f, 0.0f };
 	Vec3 camera{ 0.0f, 15.0f, -80.0f };
 
@@ -54,11 +55,16 @@ class Shape3D {
 	float yaw = 0;
 	float pitch = 0;
 	
+	//Sky
 	int sunFaces = 80;
-	bool day=false;
+	bool day=true;
 	float halfTime = pi*0.5f;
+	Image stars, clouds;
 
-	float fTheta = 0;
+	bool showStars = 1;
+	bool showClouds = 1;
+	float opacity = 1.0f;
+	int starCounter = 0;
 
 	bool wireframe = 0, colored = 1, shaded = 1;
 
@@ -67,10 +73,11 @@ class Shape3D {
 
 public:
 	Shape3D() {
+		stars.Load("./Assets/Textures/stars.jpg");
+		clouds.Load("./Assets/Textures/clouds.jpg");
+		//stars.Load("stars.jpg");
+		//clouds.Load("clouds.jpg");
 		std::async(std::launch::async, LoadModel, &mesh);
-		//Load Texture
-		texture = NULL;
-		//texture = new Texture("../Assets/Textures/house.png");
 
 		matProj = Mat4x4::MakeProjection();
 	}
@@ -85,7 +92,7 @@ public:
 		mesh->LoadFromObjectFile("./Assets/sun.obj");
 		
 		//Marching Cubes
-		GeneratedCube marchingCube(2.0f, 80.0f, 80.0f, 15.0f);
+		GeneratedCube marchingCube(2.0f, 80.0f, 80.0f, 15.0f, 3, 2);
 		marchingCube.triangles;
 		mesh->triangles.insert(mesh->triangles.end(), marchingCube.triangles.begin(), marchingCube.triangles.end());
 
@@ -93,29 +100,70 @@ public:
 		marchingCube.triangles;
 		mesh->triangles.insert(mesh->triangles.end(), waterCube.triangles.begin(), waterCube.triangles.end());
 	}
-	void checkInput(Controller& c,float newIa, float elapsedTime = 0) {
+	void drawSky(float opacity) {
+		int bgYaw = yaw, bgPitch = pitch;
+
+		while (bgYaw < -180) {
+			bgYaw += 360;
+		}
+		while (bgYaw > 180) {
+			bgYaw -= 360;
+		}
+		while (bgPitch < -180) {
+			bgPitch += 360;
+		}
+		while (bgPitch > 180) {
+			bgPitch -= 360;
+		}
+
+		if (showStars) DrawImage(stars, { -(int)(getMidX() * sin(bgYaw * pi / 360))-500,
+					(int)(getMidY() * sin(bgPitch * pi / 360)) - 500,
+					0 }, opacity);
+		if (showClouds) DrawImage(clouds, { -(int)(getMidX() * sin(bgYaw * pi / 360)) - 1000,
+					(int)(getMidY() * sin(bgPitch * pi / 360)) - 1000,
+					0 }, opacity);
+	}
+	void checkInput(Controller& c, float elapsedTime = 0) {
 		elapsedTime *= 0.000001f;
 		
 		//fTheta += elapsedFrames;
 		float change = speed * elapsedTime;
-		if(day)
-			halfTime += change*pi/180;
-		else
-			halfTime -= change * pi / 180;
+
+		wireframe = c.wireframe;
+		colored = c.colored;
+		shaded = c.shaded;
+		day = c.day;
+
+		if (c.dayCycle) {
+			if (day)
+				halfTime += change * pi / 180;
+			else
+				halfTime -= change * pi / 180;
+		}
 
 		Vec3 vertical = up * change;
 		Vec3 forward = lookDir * change;
 		Vec3 horizontal = up * lookDir * change;
 
 		//sun cycle
-		Ia = newIa;
+		Ia = c.Ia;
 		float radius = 160.0f;
 		lightPosition.x = radius *cos(halfTime);
 		lightPosition.y = radius *sin(halfTime);
-		consoleLogSpace(halfTime);
+		
+		opacity = c.starOpacity;
+		showStars = c.stars;
+		showClouds = c.clouds;
 
-		if (halfTime > pi || halfTime<0) {
-			c.day = !c.day;
+		if (c.reloadStars) {
+			std::string tmp = std::to_string(starCounter++ + 1);
+			starCounter %= 5;
+			std::string path = "./Assets/Textures/stars";
+			//std::string path = "stars";
+			path = path + tmp + ".jpg";
+			consoleLog(path.c_str());
+			stars.Load(path.c_str());
+			c.reloadStars = false;
 		}
 
 		//random
@@ -182,12 +230,9 @@ public:
 		if (c.yawB)
 			pitch += change * 10.0f;
 
-		wireframe = c.wireframe;
-		colored = c.colored;
-		shaded = c.shaded;
-		day = c.day;
 	}
 	void draw() {
+		
 		Mesh toRaster;
 		//Tranlation
 		Mat4x4 matTrans;
@@ -234,14 +279,11 @@ public:
 			else
 				matWorld.MultiplyTriangle(triTransformed, tri);
 
-			//Find Normal
+			//Find Normal for Culling
 			Vec3 normal = triTransformed.normal();
 			Vec3 CameraRay = triTransformed.vertex[0].position - camera;
 
 			//Illumination
-			/*for (int k = 0; k < 3; k++)
-				triTransformed.vertex[k].color
-				= Color(0xff, 0xff, 0xff, 0xff);*/
 			//if (Vec3::dot(normal, CameraRay.normalize()) < 0.0f) {
 			{
 				if (index < sunFaces) {
@@ -323,6 +365,9 @@ public:
 			return midZ1 > midZ2;
 			});
 
+		//DrawSky
+		if (showStars||showClouds) drawSky(opacity);
+
 		//Rasterize Triangle
 		for (auto& triToRasterize : toRaster.triangles) {
 			//Clip triangles against all four screen edges
@@ -372,6 +417,5 @@ public:
 			}
 		}
 	}
-
 };
 

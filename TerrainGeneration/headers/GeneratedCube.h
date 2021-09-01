@@ -130,8 +130,6 @@ public:
             ColorbyThresHold();
             break;
         }
-        //ColorbyNormals();
-        ColorbyThresHold();
                 
         //ConvertToVertices(mesh);
         FillTriangles(mesh);
@@ -165,9 +163,9 @@ public:
     void ColorbyInterPolation()
     {
         for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {           
-            Color ColorA = Color(108, 197, 81, 0xff); //from  0, 150, 199 //Lower Color
-            Color ColorB = Color(233, 196, 106, 0xff); //to   233, 196, 106 //Upper Color
-            mesh[VertexIndex].color = interPolateColors(-1.f, 1.f, mesh[VertexIndex].position.y, ColorA, ColorB);
+            Color colorA = Color(156, 129, 35, 0xff); //from  0, 150, 199 //Lower Color
+            Color colorB = Color(20, 134, 48, 0xff); //to   233, 196, 106 //Upper Color
+            mesh[VertexIndex].color = interPolateColors(5.0f, 12.f, mesh[VertexIndex].position.y, colorA, colorB);
         }
     }
     void ColorbyThresHold()
@@ -177,8 +175,7 @@ public:
             Color ColorL2 = Color(  0, 150, 198, 0xff); //from   0, 150, 199 //Lower Color2
             Color ColorU1 = Color(108, 197,  81, 0xff); //to   108, 197, 81 //Upper Color1
             Color ColorU2 = Color(233, 196, 106, 0xff); //to   233, 196, 106 //Upper Color2
-            float lower = -1.0f, threshold = 0.1f, upper = 1.0f;
-            //float lower = 0.2f, threshold = 0.4f, upper = 0.7f;
+            float lower = 0.0f, threshold = 6.0f, upper = 12.0f;
             //remap each normal's (x, y, z) to (r, g, b)
             if (mesh[VertexIndex].position.y < threshold) 
                 mesh[VertexIndex].color = interPolateColors(lower, threshold, mesh[VertexIndex].position.y, ColorL2, ColorL2);
@@ -189,7 +186,7 @@ public:
     void ColorWater()
     {
         for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {
-            mesh[VertexIndex].color = Color(3, 4, 94, 0xff); //Water    
+            mesh[VertexIndex].color = Color(0, 150, 198, 0xff); //Water    
         }
     }
     template <class type> __forceinline void Swap(type& t1, type& t2)

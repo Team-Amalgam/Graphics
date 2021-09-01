@@ -36,7 +36,7 @@ float distance(const float& x1, const float& y1, const float& x2, const float& y
 	return sqrtf((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 	//return abs(x2 - x1) + abs(y2 - y1);
 }
-unsigned int interPolate(const float& input1, const float& input2, const float& position, const unsigned int& val1, const unsigned int& val2) {
+unsigned int interPolate(const float& input1, const float& input2, const float& position, const unsigned int val1, const unsigned int val2) {
 	if (input1 == input2) return val1;
 	else return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
 }
@@ -70,10 +70,15 @@ inline void DrawPixel(int x, int y, Color color) {
 	if (x < 0 || x >= globalBuffer.width || y < 0 || y >= globalBuffer.height) return;
 	*((Color*)globalBuffer.memory + y * globalBuffer.width + x) = gibColorInt(color.r, color.g, color.b, color.a);
 }
-void DrawImage(Image image, Vect2<int> offset) {
+void DrawImage(Image image, Vect2<int> offset, float opacity) {
 	for (int i = 0; i < image.height; i++)
-		for (int j = 0; j < image.width; j++)
+		for (int j = 0; j < image.width; j++) {
+			image.pixels[i * image.width + j].r *= opacity;
+			image.pixels[i * image.width + j].g *= opacity;
+			image.pixels[i * image.width + j].b *= opacity;
+			image.pixels[i * image.width + j].a *= opacity;
 			DrawPixel(j + offset.x, i + offset.y, image.pixels[i * image.width + j].color);
+		}
 }
 void SortByY(Vec3 arr[max_Vertex], int n) {
 	int i, j;

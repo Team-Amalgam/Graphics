@@ -67,10 +67,5 @@ int ClipAgainstPlane(Vec3, Vec3, Triangle&, Triangle&, Triangle&);
 void DrawTriangle(Triangle&, Color = 0xffffff);
 void ColorTriangle(Triangle&, Color, Vec3 = { 0.0f,0.0f,0.0f });
 void ShadeTriangle(Triangle&, Vec3 = { 0.0f,0.0f,0.0f });
-void TextureTriangle(Triangle&, Texture*);
 void DrawHorizLine(int, int, int, Color, Vec3 = { 0, 0, 0 });
 void DrawHorizLineShaded(int, int, int, Triangle, Vec3 = { 0, 0, 0 });
-//void DrawHorizLineShaded(int, int, int, unsigned char, unsigned char, Vec3 );
-//void DrawHorizTexture(float, float, float, float&, float&, float, float, float, float, Texture*);
-void DrawHorizTexture(float, float, float, float&, float&, float&, float, float, float, float,
-	float, float, Texture*);

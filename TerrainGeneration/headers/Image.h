@@ -68,6 +68,7 @@ struct Image {
 	int height;
 	int channels;
 
+	Image();
 	Image(const char* filename);
 	Image(int width, int height, int channels);
 	Image(const Image& img);
@@ -75,6 +76,7 @@ struct Image {
 
 	bool read(const char* filename);
 	bool write(const char* filename);
+	void Load(const char* filename);
 
 	ImageType getFileType(const char* filename);
 };
