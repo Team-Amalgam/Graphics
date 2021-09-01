@@ -8,16 +8,11 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+Image::Image() {
+
+}
 Image::Image(const char* filename) {
-	if(read(filename)) {
-		consoleLog("Read %s\n");
-		consoleLog(filename);
-		size = width*height;
-	}
-	else {
-		consoleLog("Failed to read %s\n");
-		consoleLog(filename);
-	}
+	Load(filename);
 }
 
 Image::Image(int width, int height, int channels) : width(width), height(height), channels(channels) {
@@ -57,6 +52,19 @@ bool Image::write(const char* filename) {
       break;
   }
   return success != 0;
+}
+
+void Image::Load(const char* filename)
+{
+	if (read(filename)) {
+		consoleLog("Read %s\n");
+		consoleLog(filename);
+		size = width * height;
+	}
+	else {
+		consoleLog("Failed to read %s\n");
+		consoleLog(filename);
+	}
 }
 
 ImageType Image::getFileType(const char* filename) {

@@ -33,8 +33,8 @@ int CALLBACK WinMain(
 	wndclass.lpszMenuName = L"HelloThere";
 	wndclass.lpszClassName = L"ButGoodbye";
 
-	globalBuffer.width = 800;
-	globalBuffer.height = 700;
+	globalBuffer.width = 1280;
+	globalBuffer.height = 720;
 
 	globalBuffer.info.bmiHeader = {};
 	globalBuffer.info.bmiHeader.biSize = sizeof(globalBuffer.info.bmiHeader);
@@ -57,24 +57,16 @@ int CALLBACK WinMain(
 			MSG message;
 			HDC deviceContext = GetDC(window_handle);
 
-#pragma endregion
-			int angle = 0;
-			int i = 0;
-			int flag = 1;
+#pragma endregion			
 			int frameCounter = 0;
 
-			//int x = 91, y = 101, z = -239, p = 171;
-			float x = 1, y = 1, z = 201, p = 171;
-			bool textured = false;
-			Vect3<int> rot{0, 0, 0}, rotBool{0, 0, 0};
 			Controller controller;
 			unsigned deltatime;
 			
 			//DayLight Cycle
-			float totalTime=18.0f/12.0f*pi;
-			float Ia = 1.0f;
-			Color blue(173, 225, 229, 0xff), black(0, 0, 0, 0xff), red(0xff, 0x6f, 0x07, 0xff), midBlack(0x7f, 0x37, 3, 0xff);
-			float blueInt=5.0f, blackInt=1.0f, midBlackInt=2.0f, moonInt=2.5f;
+			float ghadi = 0;
+			Color blue(116, 176, 213, 0xff), black(0, 0, 0, 0xff), red(225, 152, 88, 0xff);
+			float blueInt=5.0f, blackInt=1.0f, moonInt=2.5f;
 			Color screenColor(0, 0, 0, 0xff);
 
 			auto lastframe = std::chrono::high_resolution_clock::now();
@@ -98,52 +90,36 @@ int CALLBACK WinMain(
 					case WM_KEYDOWN:
 						if (vkCode == 'W')
 						{
-							y -= multiplier;
 							controller.up = true;
 						}
 						if (vkCode == 'S')
 						{
-							y += multiplier;
 							controller.down = true;
 						}
 						if (vkCode == 'A')
 						{
-							x -= multiplier;
 							controller.left = true;
 						}
 						if (vkCode == 'D')
 						{
-							x += multiplier;
 							controller.right = true;
-						}
-						if (vkCode == 'Q')
-						{
-							z -= multiplier;
-						}
-						if (vkCode == 'E')
-						{
-							z += multiplier;
-						}
+						}						
 						if (vkCode == 'Z')
 						{
-							p -= multiplier;
 							controller.wireframe = !controller.wireframe;
 						}
 						if (vkCode == 'X')
 						{
-							p -= multiplier;
 							controller.colored = !controller.colored;
 						}
 						if (vkCode == 'C')
 						{
-							p += multiplier;
 							controller.shaded = !controller.shaded;
 						}
 						if (vkCode == 'V')
 						{
-							controller.day = !controller.day;
+							controller.dayCycle = !controller.dayCycle;
 						}
-
 						if (vkCode == 'U')
 						{
 							controller.yawF = true;
@@ -158,40 +134,19 @@ int CALLBACK WinMain(
 						}
 						if (vkCode == 'J')
 						{
-							rot.x += multiplier / 2;
-							rotBool = {1, 0, 0};
 							controller.yawL = true;
 						}
 						if (vkCode == 'L')
 						{
-							rot.x -= multiplier / 2;
-							rotBool = {1, 0, 0};
 							controller.yawR = true;
 						}
 						if (vkCode == 'I')
 						{
-							rot.y += multiplier / 2;
-							rotBool = {0, 1, 0};
 							controller.forward = true;
 						}
 						if (vkCode == 'K')
 						{
-							rot.y -= multiplier / 2;
-							rotBool = {0, 1, 0};
 							controller.backward = true;
-						}
-						if (vkCode == 'U')
-						{
-							rot.z += multiplier / 2;
-							rotBool = {0, 0, 1};
-						}
-						if (vkCode == 'O')
-						{
-							rot.z -= multiplier / 2;
-							rotBool = {0, 0, 1};
-						}
-						if (vkCode == 'B') {
-							textured = !textured;
 						}
 						if (vkCode == 'T') {
 							controller.lUp = 1;
@@ -217,142 +172,118 @@ int CALLBACK WinMain(
 					}
 				}					
 #pragma endregion
+#pragma region SkyBox
 				//Sky
-				float change = 10.f * deltatime * 0.000001f;
-				totalTime += change * pi / 180;
-
-				if (totalTime > 2*pi) totalTime = 0;
-
+				if (controller.dayCycle) {
+					float change = 10.f * deltatime * 0.000001f;
+					ghadi += change * pi / 180;
+					if (ghadi > 2 * pi) { 
+						ghadi = 0; 
+						controller.reloadStars = true;
+					}
+				}
 				//time region
-				if (totalTime >= 0 && totalTime < 1.0f/12.f * pi) {
-					screenColor=interPolateColors(0, 1.0f / 12.f * pi,totalTime,midBlack,red);
-				}
-				else if (totalTime >= 1.0f / 12.f * pi && totalTime < 3.0f / 12.f * pi)
+
+				if (ghadi >= 0 && ghadi < 3.0f / 12.f * pi)
 				{
-					screenColor = interPolateColors(1.0f / 12.f * pi, 3.0f / 12.f * pi, totalTime, red, blue);
+					screenColor = blue; 
+					controller.starOpacity = 1.0f;
+					controller.clouds = true;
+					controller.stars = false;
 				}
-				else if (totalTime >= 3.0f / 12.f * pi && totalTime < 9.0f / 12.f * pi)
+				else if (ghadi >= 3.0f / 12.f * pi && ghadi < 5.0f / 12.f * pi)
 				{
-					screenColor = blue;
+					screenColor = interPolateColors(3.0f / 12.f * pi, 5.0f / 12.f * pi, ghadi, blue, red);
+					controller.clouds = false;
+					controller.stars = false;
 				}
-				else if (totalTime >= 9.0f / 12.f * pi && totalTime < 11.0f / 12.f * pi)
+				else if (ghadi >= 5.0f / 12.f * pi && ghadi < 7.0f / 12.f * pi)
 				{
-					screenColor = interPolateColors(9.0f / 12.f * pi, 11.0f / 12.f * pi, totalTime, blue, red);
+					screenColor = interPolateColors(5.0f / 12.f * pi, 7.0f / 12.f * pi, ghadi, red, black);
+					controller.clouds = false;
+					controller.stars = false;
 				}
-				else if (totalTime >= 11.0f / 12.f * pi && totalTime < 13.0f / 12.f * pi)
-				{
-					screenColor = interPolateColors(11.0f / 12.f * pi, 13.0f / 12.f * pi, totalTime, red, black);
-				}
-				else if (totalTime >= 13.0f / 12.f * pi && totalTime < 23.0f / 12.f * pi)
+				else if (ghadi >= 7.0f / 12.f * pi && ghadi < 9.0f / 12.f * pi)
 				{
 					screenColor = black;
+					controller.starOpacity = interPolate(7.0f / 12.f * pi, 9.0f / 12.f * pi, ghadi, 0.0f, 1.0f);
+					controller.clouds = false;
+					controller.stars = true;
 				}
-				else if (totalTime >= 23.0f / 12.f * pi && totalTime < pi) {
-					screenColor = interPolateColors(23.0f / 12.f * pi, 2.f * pi, totalTime, red, midBlack);
+				else if (ghadi >= 9.0f / 12.f * pi && ghadi < 15.0f / 12.f * pi)
+				{
+					screenColor = black;
+					controller.starOpacity = 1.f;
+					controller.clouds = false;
+					controller.stars = true;
+				}
+				else if (ghadi >= 15.0f / 12.f * pi && ghadi < 17.0f / 12.f * pi)
+				{
+					screenColor = black;
+					controller.starOpacity = interPolate(15.0f / 12.f * pi, 17.0f / 12.f * pi, ghadi, 1.0f, 0.0f);
+					controller.clouds = false;
+					controller.stars = true;
+				}
+				else if (ghadi >= 17.0f / 12.f * pi && ghadi < 19.0f / 12.f * pi) {
+					screenColor = interPolateColors(17.0f / 12.f * pi, 19.0f / 12.f * pi, ghadi, black, red);					
+					controller.clouds = false;
+					controller.stars = false;
+				}
+				else if (ghadi >= 19.0f / 12.f * pi && ghadi < 21.0f / 12.f * pi)
+				{
+					screenColor = interPolateColors(19.0f / 12.f * pi, 21.0f / 12.f * pi, ghadi, red, blue);
+					controller.clouds = false;
+					controller.stars = false;
+				}
+				else if (ghadi >= 21.0f / 12.f * pi && ghadi < 24.0f / 12.f * pi)
+				{
+					screenColor = blue;
+					controller.starOpacity = 1.0f;
+					controller.clouds = true;
+					controller.stars = false;
 				}
 
 				//Intensity
-				if (totalTime >= 0 && totalTime < 3.0f / 12.f * pi) {
-					Ia = interPolate(0, 3.0f / 12.f * pi, totalTime, midBlackInt, blueInt);
-				}
-				else if (totalTime >= 3.0f / 12.f * pi && totalTime < 9.0f / 12.f * pi)
+				if (ghadi >= 0 && ghadi < 3.0f / 12.f * pi)
 				{
-					Ia = blueInt;
+					controller.Ia = blueInt;
 				}
-				else if (totalTime >= 9.0f / 12.f * pi && totalTime < 13.0f / 12.f * pi)
+				else if (ghadi >= 3.0f / 12.f * pi && ghadi < 5.0f / 12.f * pi)
 				{
-					Ia = interPolate(9.0f / 12.f * pi, 13.0f / 12.f * pi, totalTime, blueInt, blackInt);
+					controller.Ia = interPolate(3.0f / 12.f * pi, 5.0f / 12.f * pi, ghadi, blueInt, blackInt);
 				}
-				else if (totalTime >= 13.0f / 12.f * pi && totalTime < 15.0f / 12.f * pi) {
-					Ia = interPolate(13.0f / 12.f * pi, 15.0f / 12.f * pi, totalTime, blackInt, moonInt);
+				else if (ghadi >= 5.0f / 12.f * pi && ghadi < 9.0f / 12.f * pi) {
+					controller.Ia = interPolate(5.0f / 12.f * pi, 9.0f / 12.f * pi, ghadi, blackInt, moonInt);
 				}
-				else if (totalTime >= 15.0f / 12.f * pi && totalTime < 21.0f / 12.f * pi)
+				else if (ghadi >= 9.0f / 12.f * pi && ghadi < 15.0f / 12.f * pi)
 				{
-					Ia = moonInt;
+					controller.Ia = moonInt;
 				}
-				else if (totalTime >= 21.0f / 12.f * pi && totalTime < 23.0f / 12.f * pi)
+				else if (ghadi >= 15.0f / 12.f * pi && ghadi < 17.0f / 12.f * pi)
 				{
-					Ia = interPolate(21.0f / 12.f * pi, 23.0f / 12.f * pi, totalTime, moonInt, blackInt);
+					controller.Ia = interPolate(15.0f / 12.f * pi, 17.0f / 12.f * pi, ghadi, moonInt, blackInt);
 				}
-				else if (totalTime >= 23.0f / 12.f * pi && totalTime < 2.f * pi)
+				else if (ghadi >= 17.0f / 12.f * pi && ghadi < 21.0f / 12.f * pi)
 				{
-					Ia = interPolate(23.0f / 12.f * pi, 2.0f * pi, totalTime, blackInt, midBlackInt);
+					controller.Ia = interPolate(17.0f / 12.f * pi * pi, 21.0f / 12.f, ghadi, blackInt, blueInt);
 				}
+				else if (ghadi >= 21.0f / 12.f * pi && ghadi < 24.0f / 12.f * pi)
+				{
+					controller.Ia = blueInt;
+				}
+
+				controller.day = !(ghadi >= pi * 0.5f && ghadi < 1.5f * pi);
+#pragma endregion
 				ClrScr(screenColor);
-				//Lab5(x, y, z, p, textured, rot, rotBool);				
-				s.checkInput(controller,Ia, deltatime);
+				s.checkInput(controller, deltatime);
 				s.draw();
-				/*Image test("../Assets/Textures/house.png");
-				DrawImage(test);*/
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
 							  0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
 				frameCounter++;
-				//Sleep(17);
 			}
 		}
 	}
 	return 0;
 #pragma endregion
 };
-void Lab5(float x, float y, float z, float p,
-			bool textured,
-			Vect3<int> rot, Vect3<int> rotBool) {
-	//My Beautiful Baby
-	Cube3D p1;
-	Cube3D p2;
-	Cube3D p3;
-	Cube3D p4;
-
-	//AntiGimbal Rotation
-/*if (rotBool.y)
-{
-	p1.rotateY(rot.y);
-	p1.rotateX(rot.x);
-	p1.rotateZ(rot.z);
-}
-else if (rotBool.x) {
-	p1.rotateX(rot.x);
-	p1.rotateY(rot.y);
-	p1.rotateZ(rot.z);
-}
-else if (rotBool.z) {
-	p1.rotateZ(rot.z);
-	p1.rotateY(rot.y);
-	p1.rotateX(rot.x);
-}*/
-
-	//Assignment 1
-	//p1.scale(100);
-	p1.rotateX(40);
-
-	//Assignment 2
-	//p1.orthographic_projection(0, 0, 1);
-	//p1.oblique_projection(10, 60);
-	//p1.perspective_projection(-100, 50);
-
-	//Assignment3 - No
-	/*p1.translate(-50, -50, 0);
-	p1.perspective_projection(- 100, 50);
-	p1.translate(getMidX(), getMidY(), 0);*/
-
-	//Assignment4
-	/*	p1.translate({ -50, -50, -50 });
-	p1.perspective_projection(0, 0, 250, 300);
-	p2.translate({ -50, -50, -50 });
-	p2.perspective_projection(0, 0, 0, 200);
-*/
-/*p3.translate({ -50, -50, -50 });
-p3.perspective_projection(21, 31, 251, 1);
-p4.translate({ -50, -50, -50 });
-p4.perspective_projection(1, 1, 310, 1);*/
-
-//Assignment 5
-//p1.translate({-50, -50, -50});
-//p1.view({x, y, z});
-
-
-//int x = 91, y = 101, z = -239, p = 171;
-//p1.perspective_projection(0, 0, -200, 250);
-	p1.drawCube(textured);
-}
