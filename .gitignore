@@ -2,7 +2,6 @@
 *.d
 
 #Debug Folder
-ourBetterGraphics_eyy_/Debug/
 src/junk.cpp
 Assets/Results/
 
@@ -10,7 +9,6 @@ Assets/Results/
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch
