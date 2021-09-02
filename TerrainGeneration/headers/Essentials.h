@@ -116,8 +116,6 @@ struct Vect2 {
 template<typename T = float>
 struct Vect3 {
 	T x=0, y=0, z=0, w=1;
-	//Vect3() :x(0), y(0), z(0) {}
-	//Vect3(T x, T y, T z) : x(x), y(y), z(z) {}
 	Vect3 operator-(){
 		return { -this->x, -this->y, -this->z, this->w };
 	}
@@ -219,7 +217,6 @@ void ClrScr(Color = 0);
 inline void DrawPixel(int, int, Color);
 void DrawImage(Image, Vect2<int> = { 0,0,1 }, float = 1.f);
 void SortByY(Vec3[max_Vertex], int = 3);
-void SortByYTextures(Vec3[max_Vertex], Vec2[max_Vertex], int = 3);
 void SortByYIntensity(Vec3[max_Vertex], float[max_Vertex], int = 3);
 void DrawDDALine(Vect2<int>, Vect2<int>, Color);
 void DrawDDALine(float, float, float, float);

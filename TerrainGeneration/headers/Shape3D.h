@@ -1,5 +1,4 @@
 #pragma once
-#include "Texture.h"
 #include "Mesh.h"
 #include "Mat4x4.h"
 #include "GeneratedCube.h"
@@ -37,7 +36,7 @@ class Shape3D {
 	Mat4x4 matProj;
 
 	//Vec3 camera{ 0.0f, 0.0f, 0.0f };
-	Vec3 camera{ 0.0f, 15.0f, -80.0f };
+	Vec3 camera{ 0.0f, 15.0f, -75.0f };
 
 	//Lighting Parameters
 	Vec3 lightDirection = { 1.0f, 1.0f, 1.0f };

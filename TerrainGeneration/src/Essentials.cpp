@@ -99,16 +99,6 @@ void SortByYIntensity(Vec3 arr[max_Vertex], float vertex[max_Vertex], int n) {
 				Swap(vertex[j], vertex[j + 1]);
 			}
 }
-void SortByYTextures(Vec3 arr[max_Vertex], Vec2 tex[max_Vertex], int n) {
-	int i, j;
-	for (i = 0; i < n - 1; i++)
-		// Last i elements are already in place 
-		for (j = 0; j < n - 1 - i; j++)
-			if (arr[j].y > arr[j + 1].y) {
-				Swap(arr[j], arr[j + 1]);
-				Swap(tex[j], tex[j + 1]);
-			}
-}
 void DrawDDALine(Vect2<int> v1, Vect2<int> v2, Color color)
 {
 	if (v1.x < 0 || v1.x >= globalBuffer.width || v1.y < 0 || v1.y >= globalBuffer.height) {

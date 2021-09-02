@@ -77,7 +77,7 @@ int CALLBACK WinMain(
 			{
 				deltatime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - lastframe).count();
 				lastframe = std::chrono::high_resolution_clock::now();
-				//consoleLogSpace(1e6 / deltatime);
+				consoleLogSpace(1e6 / deltatime);
 				controller.reset();
 				while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
 				{

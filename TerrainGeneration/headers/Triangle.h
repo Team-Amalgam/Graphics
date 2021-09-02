@@ -1,6 +1,5 @@
 #pragma once
 #include"Essentials.h"
-#include "Texture.h"
 
 struct Vertex {
 	Vec3 position;

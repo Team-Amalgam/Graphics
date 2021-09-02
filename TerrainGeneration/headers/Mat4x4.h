@@ -1,6 +1,5 @@
 #pragma once
 #include"Essentials.h"
-#include "Texture.h"
 #include "Mesh.h"
 
 struct Mat4x4 {
@@ -105,13 +104,13 @@ struct Mat4x4 {
 		Mat4x4 mat;
 		mat.m[0][0] = x;
 		mat.m[1][1] = y;
-		mat.m[2][2] = x;
+		mat.m[2][2] = z;
 		mat.m[3][3] = 1;
 		return mat;
 		/*
 		{x,  0,   0,   0 },
-		{0,  x,   0,   0 },
-		{0,  0,   x,   0 },
+		{0,  y,   0,   0 },
+		{0,  0,   z,   0 },
 		{0,  0,   0,   1 }
 		*/
 	}
