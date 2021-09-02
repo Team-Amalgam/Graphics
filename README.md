@@ -3,6 +3,8 @@ A Random Terrain Generator and renderer, coded from scratch, using only windows.
 
 A Graphics project for 5th Sem of BCT at Tribhuvan University
 
+Download the latest release, available now!
+
 ## Significances
 - No Graphics Libraries used, everything coded from _scratch_, using only **windows.h** (We used glm but only for Simplex random generation so bear with us 😋)
 - Perlin Noise used for random surface generation.
