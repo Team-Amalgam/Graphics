@@ -16,7 +16,7 @@ A Graphics project for 5th Sem of BCT at Tribhuvan University
 - **W,A,S,D** - move Up, Left, Down, Right
 - **I, K**    - move Forward , Backward
 - **T,F,G,H,R,Y** - move Light Up, Left, Down, Right, Backward, Forward (Suggested to _pause_ the daylight cycle first)
-- **J, L, U, O**    - rotate Left, Right, forward, backward
+- **J, L, U, O**    - rotate Left, Right, look downward, look upward
 - **B** - generate terrain
 - **Z** - toggle Wireframe
 - **X** - toggle Coloring
