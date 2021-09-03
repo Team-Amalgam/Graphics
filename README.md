@@ -24,3 +24,8 @@ A Graphics project for 5th Sem of BCT at Tribhuvan University
 - **X** - toggle Coloring
 - **C** - toggle Shading (if coloring is on)
 - **V** - pause/play Daylight Cycle
+
+### Honorable Mentions and References
+
+- [Pramish Aryal](https://github.com/Pramish-Aryal)
+- [javedx9](https://github.com/OneLoneCoder)
